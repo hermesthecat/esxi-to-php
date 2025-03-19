@@ -3,6 +3,19 @@
 # Description: Lists all VMs from ESXi server in JSON format and sends to PHP script
 # Açıklama: ESXi sunucusundaki tüm VM'leri JSON formatında listeler ve PHP script'e gönderir
 
+# Check if physical machine ID is provided
+# Fiziksel makine ID'sinin verilip verilmediğini kontrol et
+if [ -z "$1" ]; then
+    echo "Error: Physical machine ID is required"
+    echo "Usage: $0 <physical_machine_id>"
+    echo "Example: $0 ESX01"
+    exit 1
+fi
+
+# Store physical machine ID
+# Fiziksel makine ID'sini sakla
+PHYSICAL_MACHINE_ID="$1"
+
 # PHP script URL (update this address according to your environment)
 # PHP script URL'si (bu adresi kendi ortamınıza göre güncelleyin)
 PHP_URL="http://localhost/show_vms.php"
@@ -11,9 +24,10 @@ PHP_URL="http://localhost/show_vms.php"
 # Geçici JSON dosyası oluştur
 json_output=$(mktemp)
 
-# JSON start
-# JSON başlangıcı
+# JSON start with physical machine ID
+# Fiziksel makine ID'si ile JSON başlangıcı
 echo "{" > "$json_output"
+echo "  \"physical_machine_id\": \"$PHYSICAL_MACHINE_ID\"," >> "$json_output"
 echo "  \"virtual_machines\": [" >> "$json_output"
 
 # Get all VMs

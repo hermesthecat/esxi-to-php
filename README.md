@@ -10,6 +10,7 @@ Bu proje, ESXi ve Proxmox sanallaştırma sunucularındaki sanal makinelerin (VM
 
 ### 1. esxi-to-php.sh
 ESXi sunucusundan VM bilgilerini toplayan bash script'i.
+- Fiziksel makine ID'si (parametre olarak)
 - VM ID ve isim bilgileri
 - Güç durumu (açık/kapalı)
 - İşletim sistemi tipi
@@ -18,9 +19,17 @@ ESXi sunucusundan VM bilgilerini toplayan bash script'i.
 - Toplam disk boyutu (GB)
 - IP adresleri
 
+Kullanım:
+```bash
+./esxi-to-php.sh <physical_machine_id>
+# Örnek:
+./esxi-to-php.sh ESX01
+```
+
 Örnek JSON çıktısı:
 ```json
 {
+  "physical_machine_id": "ESX01",
   "virtual_machines": [
     {
       "id": "1",
