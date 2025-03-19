@@ -27,6 +27,17 @@ do
     memory_mb=$(echo "$config_info" | grep "memoryMB" | awk '{print $3}' | tr -d '",')
     num_cpu=$(echo "$config_info" | grep "numCPUs" | awk '{print $3}' | tr -d '",')
     
+    # Toplam disk boyutunu hesapla
+    total_disk_size_gb=0
+    while IFS= read -r disk_line; do
+        if [[ $disk_line =~ "diskPath" ]]; then
+            disk_path=$(echo "$disk_line" | sed 's/.*"\(.*\)".*/\1/')
+            disk_size=$(echo "$config_info" | grep -A 2 "$disk_path" | grep "capacityInKB" | awk '{print $3}' | tr -d '",')
+            disk_size_gb=$((disk_size / 1024 / 1024))
+            total_disk_size_gb=$((total_disk_size_gb + disk_size_gb))
+        fi
+    done <<< "$config_info"
+    
     # JSON formatında çıktı ver
     echo "    {"
     echo "      \"id\": \"$vmid\","
@@ -36,7 +47,8 @@ do
     echo "      \"version\": \"$version\","
     echo "      \"power_state\": \"$power_state\","
     echo "      \"memory_mb\": $memory_mb,"
-    echo "      \"num_cpu\": $num_cpu"
+    echo "      \"num_cpu\": $num_cpu,"
+    echo "      \"total_disk_size_gb\": $total_disk_size_gb"
     echo -n "    }"
     
     # Son VM değilse virgül ekle
