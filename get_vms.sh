@@ -1,10 +1,16 @@
 #!/bin/bash
 # Author: A. Kerem Gök
-# Description: ESXi sunucusundaki tüm VM'leri JSON formatında listeler
+# Description: ESXi sunucusundaki tüm VM'leri JSON formatında listeler ve PHP script'e gönderir
+
+# PHP script'in URL'si (bu adresi kendi ortamınıza göre değiştirin)
+PHP_URL="http://localhost/show_vms.php"
+
+# Geçici JSON dosyası oluştur
+json_output=$(mktemp)
 
 # JSON başlangıcı
-echo "{"
-echo "  \"virtual_machines\": ["
+echo "{" > "$json_output"
+echo "  \"virtual_machines\": [" >> "$json_output"
 
 # Tüm VM'leri al
 vms=$(vim-cmd vmsvc/getallvms)
@@ -43,27 +49,32 @@ do
     ip_addresses=$(echo "$guest_info" | grep "ipAddress" | awk -F'"' '{print $2}' | sort -u | tr '\n' ',' | sed 's/,$//')
     
     # JSON formatında çıktı ver
-    echo "    {"
-    echo "      \"id\": \"$vmid\","
-    echo "      \"name\": \"$name\","
-    echo "      \"datastore_path\": \"$file\","
-    echo "      \"guest_os\": \"$guest_os\","
-    echo "      \"version\": \"$version\","
-    echo "      \"power_state\": \"$power_state\","
-    echo "      \"memory_mb\": $memory_mb,"
-    echo "      \"num_cpu\": $num_cpu,"
-    echo "      \"total_disk_size_gb\": $total_disk_size_gb,"
-    echo "      \"ip_addresses\": \"$ip_addresses\""
-    echo -n "    }"
+    echo "    {" >> "$json_output"
+    echo "      \"id\": \"$vmid\"," >> "$json_output"
+    echo "      \"name\": \"$name\"," >> "$json_output"
+    echo "      \"datastore_path\": \"$file\"," >> "$json_output"
+    echo "      \"guest_os\": \"$guest_os\"," >> "$json_output"
+    echo "      \"version\": \"$version\"," >> "$json_output"
+    echo "      \"power_state\": \"$power_state\"," >> "$json_output"
+    echo "      \"memory_mb\": $memory_mb," >> "$json_output"
+    echo "      \"num_cpu\": $num_cpu," >> "$json_output"
+    echo "      \"total_disk_size_gb\": $total_disk_size_gb," >> "$json_output"
+    echo "      \"ip_addresses\": \"$ip_addresses\"" >> "$json_output"
     
     # Son VM değilse virgül ekle
     if [ "$(echo "$vms" | tail -n +2 | tail -n1)" != "$line" ]; then
-        echo ","
+        echo "    }," >> "$json_output"
     else
-        echo ""
+        echo "    }" >> "$json_output"
     fi
 done
 
 # JSON sonlandırma
-echo "  ]"
-echo "}" 
+echo "  ]" >> "$json_output"
+echo "}" >> "$json_output"
+
+# JSON verisini PHP script'e gönder
+curl -X POST -H "Content-Type: application/json" --data-binary "@$json_output" "$PHP_URL"
+
+# Geçici dosyayı sil
+rm "$json_output" 
