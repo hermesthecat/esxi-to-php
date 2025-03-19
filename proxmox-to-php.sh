@@ -1,40 +1,52 @@
 #!/bin/bash
-# Author: A. Kerem Gök
-# Description: Proxmox sunucusundaki tüm VM'leri JSON formatında listeler ve PHP script'e gönderir
+# Author/Yazar: A. Kerem Gök
+# Description: Lists all VMs from Proxmox server in JSON format and sends to PHP script
+# Açıklama: Proxmox sunucusundaki tüm VM'leri JSON formatında listeler ve PHP script'e gönderir
 
-# PHP script'in URL'si (bu adresi kendi ortamınıza göre değiştirin)
+# PHP script URL (update this address according to your environment)
+# PHP script URL'si (bu adresi kendi ortamınıza göre güncelleyin)
 PHP_URL="http://localhost/show_vms.php"
 
+# Create temporary JSON file
 # Geçici JSON dosyası oluştur
 json_output=$(mktemp)
 
+# JSON start
 # JSON başlangıcı
 echo "{" > "$json_output"
 echo "  \"virtual_machines\": [" >> "$json_output"
 
+# Get all VMs (QEMU/KVM only)
 # Tüm VM'leri al (sadece QEMU/KVM makineleri)
 vms=$(pvesh get /cluster/resources --type vm)
 
+# Process VM list
 # VM listesini işle
 first=true
 echo "$vms" | jq -c '.[]' | while read -r vm; do
+    # Parse basic VM information
+    # Temel VM bilgilerini parse et
     vmid=$(echo "$vm" | jq -r '.vmid')
     name=$(echo "$vm" | jq -r '.name')
     status=$(echo "$vm" | jq -r '.status')
     maxmem=$(echo "$vm" | jq -r '.maxmem')
     maxcpu=$(echo "$vm" | jq -r '.maxcpu')
     
+    # Get detailed VM information
     # VM'in detaylı bilgilerini al
     config=$(qm config "$vmid")
     
+    # Get operating system type
     # İşletim sistemi tipini al
     guest_os=$(echo "$config" | grep "^ostype:" | cut -d' ' -f2)
     
+    # Calculate total disk size
     # Toplam disk boyutunu hesapla
     total_disk_size_gb=0
     while read -r disk; do
         if [[ $disk =~ ^(virtio|scsi|ide|sata)[0-9]+:.*size=([0-9]+[GMT]).*$ ]]; then
             size=${BASH_REMATCH[2]}
+            # Convert size to GB
             # Boyutu GB'a çevir
             if [[ $size =~ ([0-9]+)T$ ]]; then
                 size_gb=$((${BASH_REMATCH[1]} * 1024))
@@ -47,9 +59,11 @@ echo "$vms" | jq -c '.[]' | while read -r vm; do
         fi
     done <<< "$(echo "$config" | grep -E '^(virtio|scsi|ide|sata)[0-9]+:')"
     
+    # Get IP addresses (if VM is running)
     # IP adreslerini al (eğer makine çalışıyorsa)
     ip_addresses=""
     if [ "$status" = "running" ]; then
+        # Get IP information through QEMU agent
         # QEMU agent üzerinden IP bilgilerini al
         agent_info=$(qm agent "$vmid" network-get-interfaces 2>/dev/null)
         if [ $? -eq 0 ]; then
@@ -57,9 +71,11 @@ echo "$vms" | jq -c '.[]' | while read -r vm; do
         fi
     fi
     
+    # Convert memory to GB
     # Belleği GB'a çevir
     memory_gb=$(echo "scale=2; $maxmem / 1024 / 1024 / 1024" | bc)
     
+    # Output in JSON format
     # JSON formatında çıktı ver
     if [ "$first" = true ]; then
         first=false
@@ -79,13 +95,16 @@ echo "$vms" | jq -c '.[]' | while read -r vm; do
     echo -n "    }" >> "$json_output"
 done
 
+# JSON end
 # JSON sonlandırma
 echo "" >> "$json_output"
 echo "  ]" >> "$json_output"
 echo "}" >> "$json_output"
 
+# Send JSON data to PHP script
 # JSON verisini PHP script'e gönder
 curl -X POST -H "Content-Type: application/json" --data-binary "@$json_output" "$PHP_URL"
 
+# Delete temporary file
 # Geçici dosyayı sil
 rm "$json_output" 
