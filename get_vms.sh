@@ -38,6 +38,10 @@ do
         fi
     done <<< "$config_info"
     
+    # IP adreslerini al
+    guest_info=$(vim-cmd vmsvc/get.guest "$vmid")
+    ip_addresses=$(echo "$guest_info" | grep "ipAddress" | awk -F'"' '{print $2}' | sort -u | tr '\n' ',' | sed 's/,$//')
+    
     # JSON formatında çıktı ver
     echo "    {"
     echo "      \"id\": \"$vmid\","
@@ -48,7 +52,8 @@ do
     echo "      \"power_state\": \"$power_state\","
     echo "      \"memory_mb\": $memory_mb,"
     echo "      \"num_cpu\": $num_cpu,"
-    echo "      \"total_disk_size_gb\": $total_disk_size_gb"
+    echo "      \"total_disk_size_gb\": $total_disk_size_gb,"
+    echo "      \"ip_addresses\": \"$ip_addresses\""
     echo -n "    }"
     
     # Son VM değilse virgül ekle
