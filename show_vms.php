@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <title>ESXi Sanal Makineler</title>
@@ -9,40 +10,50 @@
             margin: 20px;
             background-color: #f5f5f5;
         }
+
         h1 {
             color: #333;
             text-align: center;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             background-color: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
             margin-top: 20px;
         }
-        th, td {
+
+        th,
+        td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
+
         th {
             background-color: #4CAF50;
             color: white;
         }
+
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
+
         tr:hover {
             background-color: #ddd;
         }
+
         .power-on {
             color: green;
             font-weight: bold;
         }
+
         .power-off {
             color: red;
             font-weight: bold;
         }
+
         .last-update {
             text-align: right;
             margin-top: 10px;
@@ -50,6 +61,7 @@
         }
     </style>
 </head>
+
 <body>
     <h1>ESXi Sanal Makineler</h1>
     <?php
@@ -91,4 +103,5 @@
         Son Güncelleme: <?php echo date('d.m.Y H:i:s'); ?>
     </div>
 </body>
-</html> 
+
+</html>
