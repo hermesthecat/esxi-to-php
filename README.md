@@ -18,6 +18,38 @@ ESXi sunucusundan VM bilgilerini toplayan bash script'i.
 - Toplam disk boyutu (GB)
 - IP adresleri
 
+Örnek JSON çıktısı:
+```json
+{
+  "virtual_machines": [
+    {
+      "id": "1",
+      "name": "Web-Server",
+      "datastore_path": "[datastore1] Web-Server/Web-Server.vmx",
+      "guest_os": "ubuntu64Guest",
+      "version": "vmx-19",
+      "power_state": "on",
+      "memory_mb": 4096,
+      "num_cpu": 2,
+      "total_disk_size_gb": 150,
+      "ip_addresses": "192.168.1.100,10.0.0.100"
+    },
+    {
+      "id": "2",
+      "name": "Database-Server",
+      "datastore_path": "[datastore1] Database-Server/Database-Server.vmx",
+      "guest_os": "centos7_64Guest",
+      "version": "vmx-19",
+      "power_state": "off",
+      "memory_mb": 8192,
+      "num_cpu": 4,
+      "total_disk_size_gb": 500,
+      "ip_addresses": ""
+    }
+  ]
+}
+```
+
 ### 2. proxmox-to-php.sh
 Proxmox sunucusundan VM bilgilerini toplayan bash script'i.
 - VM ID ve isim bilgileri
@@ -26,6 +58,34 @@ Proxmox sunucusundan VM bilgilerini toplayan bash script'i.
 - CPU ve RAM bilgileri
 - Toplam disk boyutu (GB)
 - IP adresleri (QEMU agent üzerinden)
+
+Örnek JSON çıktısı:
+```json
+{
+  "virtual_machines": [
+    {
+      "id": "100",
+      "name": "web-prod",
+      "guest_os": "l26",
+      "power_state": "running",
+      "memory_mb": 4096,
+      "num_cpu": 2,
+      "total_disk_size_gb": 120,
+      "ip_addresses": "192.168.1.50,10.0.0.50"
+    },
+    {
+      "id": "101",
+      "name": "db-prod",
+      "guest_os": "win10",
+      "power_state": "stopped",
+      "memory_mb": 16384,
+      "num_cpu": 4,
+      "total_disk_size_gb": 750,
+      "ip_addresses": ""
+    }
+  ]
+}
+```
 
 ### 3. show_vms.php
 VM bilgilerini web arayüzünde gösteren PHP script'i.
