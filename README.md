@@ -61,6 +61,7 @@ Kullanım:
 
 ### 2. proxmox-to-php.sh
 Proxmox sunucusundan VM bilgilerini toplayan bash script'i.
+- Fiziksel makine ID'si (parametre olarak)
 - VM ID ve isim bilgileri
 - Güç durumu (running/stopped)
 - İşletim sistemi tipi
@@ -68,9 +69,17 @@ Proxmox sunucusundan VM bilgilerini toplayan bash script'i.
 - Toplam disk boyutu (GB)
 - IP adresleri (QEMU agent üzerinden)
 
+Kullanım:
+```bash
+./proxmox-to-php.sh <physical_machine_id>
+# Örnek:
+./proxmox-to-php.sh PVE01
+```
+
 Örnek JSON çıktısı:
 ```json
 {
+  "physical_machine_id": "PVE01",
   "virtual_machines": [
     {
       "id": "100",
@@ -147,12 +156,16 @@ VM bilgilerini web arayüzünde gösteren PHP script'i.
 
 ### ESXi Sunucusunda
 ```bash
-./esxi-to-php.sh
+./esxi-to-php.sh <physical_machine_id>
+# Örnek:
+./esxi-to-php.sh ESX01
 ```
 
 ### Proxmox Sunucusunda
 ```bash
-./proxmox-to-php.sh
+./proxmox-to-php.sh <physical_machine_id>
+# Örnek:
+./proxmox-to-php.sh PVE01
 ```
 
 ## Özellikler
